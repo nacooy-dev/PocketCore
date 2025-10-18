@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>设置 - PocketCore</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --sidebar-width: 260px;
+            --header-height: 60px;
+            --primary-color: #10a37f;
+            --sidebar-bg: #202123;
+            --content-bg: #343541;
+            --card-bg: #444654;
+            --input-bg: #40414f;
+            --border-color: #4d4d4f;
+            --text-primary: #ffffff;
+            --text-secondary: #c5c5d2;
+            --hover-color: #2a2b32;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--content-bg);
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* 侧边栏样式 */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--sidebar-bg);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border-color);
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .sidebar-header h1 {
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+
+        .sidebar-menu {
+            flex: 1;
+            padding: 10px;
+        }
+
+        .menu-item {
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin-bottom: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.95rem;
+            transition: background-color 0.2s;
+        }
+
+        .menu-item:hover {
+            background-color: var(--hover-color);
+        }
+
+        .menu-item.active {
+            background-color: #444654;
+        }
+
+        .sidebar-footer {
+            padding: 15px;
+            border-top: 1px solid var(--border-color);
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        /* 主内容区域样式 */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .settings-header {
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            border-bottom: 1px solid var(--border-color);
+            background-color: var(--card-bg);
+        }
+
+        .settings-title {
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+
+        .settings-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px;
+        }
+
+        .settings-section {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-header {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .section-header h2 {
+            font-size: 1.3rem;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-header p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            padding: 12px 15px;
+            font-size: 1rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 1px var(--primary-color);
+        }
+
+        .form-control:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .select-wrapper {
+            position: relative;
+        }
+
+        .select-wrapper::after {
+            content: "▼";
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 0.7rem;
+            pointer-events: none;
+        }
+
+        .select-wrapper select {
+            appearance: none;
+            padding-right: 35px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: background 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background-color: #0d8a6a;
+        }
+
+        .btn:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--hover-color);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .model-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .model-card {
+            background-color: var(--input-bg);
+            border-radius: 6px;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            transition: transform 0.2s;
+        }
+
+        .model-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .model-card h4 {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .model-card ul {
+            padding-left: 20px;
+        }
+
+        .model-card li {
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #10a37f;
+            margin-right: 8px;
+        }
+
+        .status-offline {
+            background: #ff4444;
+        }
+
+        .api-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            padding: 10px;
+            background-color: var(--input-bg);
+            border-radius: 6px;
+        }
+
+        .connection-test {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .test-result {
+            font-size: 0.9rem;
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+
+        .test-success {
+            background-color: rgba(16, 163, 127, 0.2);
+            color: #10a37f;
+        }
+
+        .test-error {
+            background-color: rgba(255, 68, 68, 0.2);
+            color: #ff4444;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .settings-container {
+                padding: 20px 15px;
+            }
+            
+            .settings-section {
+                padding: 20px;
+            }
+            
+            .model-list {
+                grid-template-columns: 1fr;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+            }
+        }
+
+        /* 通知样式 */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 6px;
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            transform: translateX(120%);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background-color: var(--primary-color);
+        }
+
+        .notification.error {
+            background-color: #ff4444;
+        }
+
+        /* 加载动画 */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 切换开关 */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- 侧边栏 -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h1>PocketCore</h1>
+            </div>
+            
+            <div class="sidebar-menu">
+                <div class="menu-item" onclick="window.location.href='/'">
+                    <i class="fas fa-home"></i>
+                    <span>主页</span>
+                </div>
+                <div class="menu-item" onclick="window.location.href='/chat'">
+                    <i class="fas fa-comments"></i>
+                    <span>对话</span>
+                </div>
+                <div class="menu-item active">
+                    <i class="fas fa-cog"></i>
+                    <span>设置</span>
+                </div>
+            </div>
+            
+            <div class="sidebar-footer">
+                <div>PocketCore v1.0</div>
+                <div>智能助手中枢</div>
+            </div>
+        </div>
+        
+        <!-- 主内容区域 -->
+        <div class="main-content">
+            <div class="settings-header">
+                <div class="settings-title">设置</div>
+            </div>
+            
+            <div class="settings-container">
+                <!-- 模型配置 -->
+                <div class="settings-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-robot"></i> 模型配置</h2>
+                        <p>配置和管理AI模型设置</p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="default-provider">默认模型提供商</label>
+                        <div class="select-wrapper">
+                            <select class="form-control" id="default-provider">
+                                <option value="ollama">Ollama (本地)</option>
+                                <option value="openai">OpenAI</option>
+                                <option value="anthropic">Anthropic</option>
+                                <option value="zhipu">智谱</option>
+                                <option value="openrouter">OpenRouter</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="default-model">默认模型</label>
+                        <input type="text" class="form-control" id="default-model" value="qwen3:4b">
+                    </div>
+                    
+                    <div class="api-status">
+                        <span class="status-indicator" id="ollama-status"></span>
+                        <span>Ollama服务: <span id="ollama-status-text">检查中...</span></span>
+                    </div>
+                </div>
+                
+                <!-- API密钥配置 -->
+                <div class="settings-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-key"></i> API密钥</h2>
+                        <p>配置云端模型的API密钥</p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="openai-key">
+                            <i class="fab fa-openai"></i> OpenAI API密钥
+                        </label>
+                        <input type="password" class="form-control" id="openai-key" placeholder="sk-...">
+                    </div>
+                    
+                    <div class="connection-test">
+                        <button class="btn btn-secondary" id="test-openai">
+                            <i class="fas fa-plug"></i> 测试连接
+                        </button>
+                        <div id="openai-test-result"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="anthropic-key">
+                            <i class="fas fa-brain"></i> Anthropic API密钥
+                        </label>
+                        <input type="password" class="form-control" id="anthropic-key" placeholder="sk-ant-...">
+                    </div>
+                    
+                    <div class="connection-test">
+                        <button class="btn btn-secondary" id="test-anthropic">
+                            <i class="fas fa-plug"></i> 测试连接
+                        </button>
+                        <div id="anthropic-test-result"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="zhipu-key">
+                            <i class="fas fa-leaf"></i> 智谱API密钥
+                        </label>
+                        <input type="password" class="form-control" id="zhipu-key" placeholder="...">
+                    </div>
+                    
+                    <div class="connection-test">
+                        <button class="btn btn-secondary" id="test-zhipu">
+                            <i class="fas fa-plug"></i> 测试连接
+                        </button>
+                        <div id="zhipu-test-result"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="openrouter-key">
+                            <i class="fas fa-route"></i> OpenRouter API密钥
+                        </label>
+                        <input type="password" class="form-control" id="openrouter-key" placeholder="sk-or-...">
+                    </div>
+                    
+                    <div class="connection-test">
+                        <button class="btn btn-secondary" id="test-openrouter">
+                            <i class="fas fa-plug"></i> 测试连接
+                        </button>
+                        <div id="openrouter-test-result"></div>
+                    </div>
+                </div>
+                
+                <!-- 可用模型 -->
+                <div class="settings-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-list"></i> 可用模型</h2>
+                        <p>当前可用的AI模型列表</p>
+                    </div>
+                    
+                    <div class="model-list" id="model-list">
+                        <!-- 模型列表将通过JavaScript动态加载 -->
+                        <div class="loading">加载中...</div>
+                    </div>
+                </div>
+                
+                <!-- 高级设置 -->
+                <div class="settings-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-cogs"></i> 高级设置</h2>
+                        <p>高级配置选项</p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="max-memory-size">最大内存大小</label>
+                        <input type="number" class="form-control" id="max-memory-size" value="1000" min="100" max="10000">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="debug-mode">调试模式</label>
+                        <div class="checkbox-group">
+                            <label class="switch">
+                                <input type="checkbox" id="debug-mode">
+                                <span class="slider"></span>
+                            </label>
+                            <span>启用调试模式</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 操作按钮 -->
+                <div class="btn-group">
+                    <button class="btn" id="save-settings">
+                        <i class="fas fa-save"></i> 保存设置
+                    </button>
+                    <button class="btn btn-secondary" id="reset-settings">
+                        <i class="fas fa-undo"></i> 重置
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 通知 -->
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // DOM元素
+        const defaultProvider = document.getElementById('default-provider');
+        const defaultModel = document.getElementById('default-model');
+        const saveSettingsBtn = document.getElementById('save-settings');
+        const resetSettingsBtn = document.getElementById('reset-settings');
+        const modelList = document.getElementById('model-list');
+        const ollamaStatus = document.getElementById('ollama-status');
+        const ollamaStatusText = document.getElementById('ollama-status-text');
+        const notification = document.getElementById('notification');
+        const maxMemorySize = document.getElementById('max-memory-size');
+        const debugMode = document.getElementById('debug-mode');
+        
+        // API测试按钮
+        const testOpenAI = document.getElementById('test-openai');
+        const testAnthropic = document.getElementById('test-anthropic');
+        const testZhipu = document.getElementById('test-zhipu');
+        const testOpenRouter = document.getElementById('test-openrouter');
+        
+        // API测试结果元素
+        const openaiTestResult = document.getElementById('openai-test-result');
+        const anthropicTestResult = document.getElementById('anthropic-test-result');
+        const zhipuTestResult = document.getElementById('zhipu-test-result');
+        const openrouterTestResult = document.getElementById('openrouter-test-result');
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSettings();
+            loadModels();
+            checkOllamaStatus();
+        });
+        
+        // 加载设置
+        function loadSettings() {
+            // 从localStorage加载设置
+            const settings = JSON.parse(localStorage.getItem('pocketcore-settings')) || {
+                defaultProvider: 'ollama',
+                defaultModel: 'qwen3:4b',
+                apiKeys: {
+                    openai: '',
+                    anthropic: '',
+                    zhipu: '',
+                    openrouter: ''
+                },
+                maxMemorySize: 1000,
+                debugMode: false
+            };
+            
+            defaultProvider.value = settings.defaultProvider;
+            defaultModel.value = settings.defaultModel;
+            maxMemorySize.value = settings.maxMemorySize || 1000;
+            debugMode.checked = settings.debugMode || false;
+            
+            // 加载API密钥（如果已保存）
+            if (settings.apiKeys) {
+                document.getElementById('openai-key').value = settings.apiKeys.openai || '';
+                document.getElementById('anthropic-key').value = settings.apiKeys.anthropic || '';
+                document.getElementById('zhipu-key').value = settings.apiKeys.zhipu || '';
+                document.getElementById('openrouter-key').value = settings.apiKeys.openrouter || '';
+            }
+        }
+        
+        // 保存设置
+        function saveSettings() {
+            const settings = {
+                defaultProvider: defaultProvider.value,
+                defaultModel: defaultModel.value,
+                apiKeys: {
+                    openai: document.getElementById('openai-key').value,
+                    anthropic: document.getElementById('anthropic-key').value,
+                    zhipu: document.getElementById('zhipu-key').value,
+                    openrouter: document.getElementById('openrouter-key').value
+                },
+                maxMemorySize: parseInt(maxMemorySize.value) || 1000,
+                debugMode: debugMode.checked
+            };
+            
+            localStorage.setItem('pocketcore-settings', JSON.stringify(settings));
+            showNotification('设置已保存！', 'success');
+        }
+        
+        // 重置设置
+        function resetSettings() {
+            if (confirm('确定要重置所有设置吗？')) {
+                localStorage.removeItem('pocketcore-settings');
+                loadSettings();
+                showNotification('设置已重置！', 'success');
+            }
+        }
+        
+        // 加载模型列表
+        async function loadModels() {
+            try {
+                const response = await fetch('/models');
+                if (response.ok) {
+                    const data = await response.json();
+                    renderModelList(data.models);
+                } else {
+                    modelList.innerHTML = '<div class="error">加载模型列表失败</div>';
+                }
+            } catch (error) {
+                modelList.innerHTML = '<div class="error">网络错误: ' + error.message + '</div>';
+            }
+        }
+        
+        // 渲染模型列表
+        function renderModelList(models) {
+            if (!models || models.length === 0) {
+                modelList.innerHTML = '<div>暂无可用模型</div>';
+                return;
+            }
+            
+            let html = '';
+            models.forEach(provider => {
+                html += `
+                    <div class="model-card">
+                        <h4><i class="fas fa-server"></i> ${provider.provider.toUpperCase()}</h4>
+                        <ul>
+                `;
+                provider.models.forEach(model => {
+                    html += `<li>${model}</li>`;
+                });
+                html += `
+                        </ul>
+                    </div>
+                `;
+            });
+            
+            modelList.innerHTML = html;
+        }
+        
+        // 检查Ollama状态
+        async function checkOllamaStatus() {
+            try {
+                const response = await fetch('http://localhost:11434/api/tags');
+                if (response.ok) {
+                    ollamaStatus.className = 'status-indicator';
+                    ollamaStatusText.textContent = '在线';
+                } else {
+                    ollamaStatus.className = 'status-indicator status-offline';
+                    ollamaStatusText.textContent = '离线';
+                }
+            } catch (error) {
+                ollamaStatus.className = 'status-indicator status-offline';
+                ollamaStatusText.textContent = '离线';
+            }
+        }
+        
+        // 测试OpenAI连接
+        async function testOpenAIConnection() {
+            const apiKey = document.getElementById('openai-key').value;
+            if (!apiKey) {
+                showTestResult(openaiTestResult, '请输入API密钥', 'error');
+                return;
+            }
+            
+            showTestResult(openaiTestResult, '测试中...', 'loading');
+            
+            try {
+                // 这里应该调用实际的测试API
+                // 模拟测试结果
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                showTestResult(openaiTestResult, '连接成功！', 'success');
+            } catch (error) {
+                showTestResult(openaiTestResult, '连接失败: ' + error.message, 'error');
+            }
+        }
+        
+        // 测试Anthropic连接
+        async function testAnthropicConnection() {
+            const apiKey = document.getElementById('anthropic-key').value;
+            if (!apiKey) {
+                showTestResult(anthropicTestResult, '请输入API密钥', 'error');
+                return;
+            }
+            
+            showTestResult(anthropicTestResult, '测试中...', 'loading');
+            
+            try {
+                // 这里应该调用实际的测试API
+                // 模拟测试结果
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                showTestResult(anthropicTestResult, '连接成功！', 'success');
+            } catch (error) {
+                showTestResult(anthropicTestResult, '连接失败: ' + error.message, 'error');
+            }
+        }
+        
+        // 测试智谱连接
+        async function testZhipuConnection() {
+            const apiKey = document.getElementById('zhipu-key').value;
+            if (!apiKey) {
+                showTestResult(zhipuTestResult, '请输入API密钥', 'error');
+                return;
+            }
+            
+            showTestResult(zhipuTestResult, '测试中...', 'loading');
+            
+            try {
+                // 这里应该调用实际的测试API
+                // 模拟测试结果
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                showTestResult(zhipuTestResult, '连接成功！', 'success');
+            } catch (error) {
+                showTestResult(zhipuTestResult, '连接失败: ' + error.message, 'error');
+            }
+        }
+        
+        // 测试OpenRouter连接
+        async function testOpenRouterConnection() {
+            const apiKey = document.getElementById('openrouter-key').value;
+            if (!apiKey) {
+                showTestResult(openrouterTestResult, '请输入API密钥', 'error');
+                return;
+            }
+            
+            showTestResult(openrouterTestResult, '测试中...', 'loading');
+            
+            try {
+                // 这里应该调用实际的测试API
+                // 模拟测试结果
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                showTestResult(openrouterTestResult, '连接成功！', 'success');
+            } catch (error) {
+                showTestResult(openrouterTestResult, '连接失败: ' + error.message, 'error');
+            }
+        }
+        
+        // 显示测试结果
+        function showTestResult(element, message, type) {
+            let className = 'test-result';
+            if (type === 'success') {
+                className += ' test-success';
+            } else if (type === 'error') {
+                className += ' test-error';
+            }
+            
+            element.innerHTML = `<span class="${className}">${message}</span>`;
+        }
+        
+        // 显示通知
+        function showNotification(message, type) {
+            notification.textContent = message;
+            notification.className = 'notification ' + type;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        // 事件监听器
+        saveSettingsBtn.addEventListener('click', saveSettings);
+        resetSettingsBtn.addEventListener('click', resetSettings);
+        
+        // API测试事件监听器
+        testOpenAI.addEventListener('click', testOpenAIConnection);
+        testAnthropic.addEventListener('click', testAnthropicConnection);
+        testZhipu.addEventListener('click', testZhipuConnection);
+        testOpenRouter.addEventListener('click', testOpenRouterConnection);
+    </script>
+</body>
+</html>

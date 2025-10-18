@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PocketCore 对话助手</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --sidebar-width: 260px;
+            --header-height: 60px;
+            --primary-color: #10a37f;
+            --sidebar-bg: #202123;
+            --chat-bg: #343541;
+            --user-msg-bg: #10a37f;
+            --assistant-msg-bg: #444654;
+            --input-bg: #40414f;
+            --border-color: #4d4d4f;
+            --text-primary: #ffffff;
+            --text-secondary: #c5c5d2;
+            --hover-color: #2a2b32;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--chat-bg);
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* 侧边栏样式 */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--sidebar-bg);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease;
+            z-index: 100;
+            border-right: 1px solid var(--border-color);
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .new-chat-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .new-chat-btn:hover {
+            background-color: var(--hover-color);
+        }
+
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .chat-history {
+            margin-top: 20px;
+        }
+
+        .chat-history h3 {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            padding: 0 10px;
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .history-item {
+            padding: 10px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: background-color 0.2s;
+        }
+
+        .history-item:hover {
+            background-color: var(--hover-color);
+        }
+
+        .history-item.active {
+            background-color: #444654;
+        }
+
+        .sidebar-footer {
+            padding: 15px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .settings-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .settings-btn:hover {
+            background-color: var(--hover-color);
+        }
+
+        /* 主聊天区域样式 */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            position: relative;
+        }
+
+        .chat-header {
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            border-bottom: 1px solid var(--border-color);
+            background-color: #444654;
+        }
+
+        .menu-toggle {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: none;
+            padding: 8px;
+            border-radius: 4px;
+        }
+
+        .menu-toggle:hover {
+            background-color: var(--hover-color);
+        }
+
+        .chat-title {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(180deg, rgba(53,55,64,1) 0%, rgba(45,47,55,1) 100%);
+        }
+
+        .welcome-message {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .welcome-title {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+        }
+
+        .welcome-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+            max-width: 600px;
+        }
+
+        .capabilities-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .capability-card {
+            background-color: var(--assistant-msg-bg);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .capability-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .capability-icon {
+            font-size: 2rem;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+
+        .capability-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .capability-desc {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .message {
+            padding: 20px 0;
+            display: flex;
+            gap: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .message-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .user-avatar {
+            background-color: var(--user-msg-bg);
+        }
+
+        .assistant-avatar {
+            background-color: #6e6e80;
+        }
+
+        .message-content {
+            flex: 1;
+            padding-top: 3px;
+            line-height: 1.5;
+        }
+
+        .user-message .message-content {
+            color: white;
+        }
+
+        .assistant-message .message-content {
+            color: var(--text-primary);
+        }
+
+        .input-container {
+            padding: 20px;
+            position: relative;
+            background-color: var(--chat-bg);
+            border-top: 1px solid var(--border-color);
+        }
+
+        .input-box {
+            position: relative;
+            max-width: 768px;
+            margin: 0 auto;
+        }
+
+        .message-input {
+            width: 100%;
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            padding: 15px 50px 15px 20px;
+            resize: none;
+            height: 56px;
+            max-height: 200px;
+            outline: none;
+            font-size: 1rem;
+        }
+
+        .message-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 1px var(--primary-color);
+        }
+
+        .send-button {
+            position: absolute;
+            right: 12px;
+            bottom: 12px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .send-button:hover {
+            background: #0d8a6a;
+        }
+
+        .send-button:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: absolute;
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .menu-toggle {
+                display: block;
+            }
+            
+            .capabilities-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 工具消息样式 */
+        .tool-message {
+            background-color: #3e3f4b;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        .tool-message-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            color: #10a37f;
+        }
+
+        /* 状态指示器 */
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #10a37f;
+            margin-right: 8px;
+        }
+
+        .status-offline {
+            background: #ff4444;
+        }
+
+        /* 加载动画 */
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 10px 0;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--text-secondary);
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: 0s; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-5px); }
+        }
+
+        /* 滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #555;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #777;
+        }
+
+        /* 消息操作按钮 */
+        .message-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .message:hover .message-actions {
+            opacity: 1;
+        }
+
+        .action-btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            border-radius: 4px;
+            padding: 4px 8px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .action-btn:hover {
+            background-color: var(--hover-color);
+            color: var(--text-primary);
+        }
+
+        /* 模型选择器 */
+        .model-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .model-dropdown {
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-primary);
+            padding: 4px 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- 侧边栏 -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <button class="new-chat-btn" id="new-chat-btn">
+                    <i class="fas fa-plus"></i>
+                    新建对话
+                </button>
+            </div>
+            
+            <div class="sidebar-content">
+                <div class="chat-history">
+                    <h3>历史对话</h3>
+                    <div class="history-list" id="history-list">
+                        <!-- 历史对话项将通过JavaScript动态添加 -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sidebar-footer">
+                <button class="settings-btn" id="settings-btn">
+                    <i class="fas fa-cog"></i>
+                    设置
+                </button>
+            </div>
+        </div>
+        
+        <!-- 主内容区域 -->
+        <div class="main-content">
+            <div class="chat-header">
+                <button class="menu-toggle" id="menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="chat-title">PocketCore 对话助手</div>
+                <div class="model-selector">
+                    <span>模型:</span>
+                    <select class="model-dropdown" id="model-selector">
+                        <option value="qwen3:4b">qwen3:4b (本地)</option>
+                        <option value="gemma3:4b">gemma3:4b (本地)</option>
+                    </select>
+                </div>
+                <div class="status-indicator" id="status-indicator"></div>
+            </div>
+            
+            <div class="chat-container" id="chat-container">
+                <div class="welcome-message">
+                    <h1 class="welcome-title">PocketCore 智能助手</h1>
+                    <p class="welcome-subtitle">您的个人AI助手，可以帮您处理各种任务</p>
+                    <div class="capabilities-grid">
+                        <div class="capability-card">
+                            <div class="capability-icon">
+                                <i class="fas fa-calculator"></i>
+                            </div>
+                            <h3 class="capability-title">数学计算</h3>
+                            <p class="capability-desc">快速准确地计算数学表达式</p>
+                        </div>
+                        <div class="capability-card">
+                            <div class="capability-icon">
+                                <i class="fas fa-language"></i>
+                            </div>
+                            <h3 class="capability-title">语言翻译</h3>
+                            <p class="capability-desc">支持多种语言的翻译服务</p>
+                        </div>
+                        <div class="capability-card">
+                            <div class="capability-icon">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <h3 class="capability-title">信息搜索</h3>
+                            <p class="capability-desc">查找您需要的各种信息</p>
+                        </div>
+                        <div class="capability-card">
+                            <div class="capability-icon">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <h3 class="capability-title">模型管理</h3>
+                            <p class="capability-desc">查看和管理可用的AI模型</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="input-container">
+                <div class="input-box">
+                    <textarea 
+                        class="message-input" 
+                        id="message-input" 
+                        placeholder="输入消息... (Shift+Enter换行)" 
+                        autocomplete="off"
+                    ></textarea>
+                    <button class="send-button" id="send-button">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM元素
+        const sidebar = document.getElementById('sidebar');
+        const menuToggle = document.getElementById('menu-toggle');
+        const newChatBtn = document.getElementById('new-chat-btn');
+        const settingsBtn = document.getElementById('settings-btn');
+        const chatContainer = document.getElementById('chat-container');
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
+        const statusIndicator = document.getElementById('status-indicator');
+        const historyList = document.getElementById('history-list');
+        const modelSelector = document.getElementById('model-selector');
+        
+        // 状态变量
+        let currentChatId = 'default';
+        let chatHistory = JSON.parse(localStorage.getItem('chatHistory')) || [];
+        let currentModel = 'qwen3:4b';
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            messageInput.focus();
+            loadChatHistory();
+            testConnection();
+            
+            // 设置模型选择器的初始值
+            modelSelector.value = currentModel;
+        });
+        
+        // 切换侧边栏
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+        });
+        
+        // 新建对话
+        newChatBtn.addEventListener('click', () => {
+            clearChat();
+            sidebar.classList.remove('open');
+        });
+        
+        // 设置按钮
+        settingsBtn.addEventListener('click', () => {
+            window.location.href = '/settings';
+        });
+        
+        // 模型选择
+        modelSelector.addEventListener('change', (e) => {
+            currentModel = e.target.value;
+        });
+        
+        // 发送消息
+        sendButton.addEventListener('click', sendMessage);
+        
+        // 回车发送消息（Shift+Enter换行）
+        messageInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                if (!sendButton.disabled) {
+                    sendMessage();
+                }
+            }
+        });
+        
+        // 添加消息到聊天界面
+        function addMessage(content, sender, isToolCall = false) {
+            // 如果是第一条消息，移除欢迎界面
+            if (chatContainer.querySelector('.welcome-message')) {
+                chatContainer.innerHTML = '';
+            }
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            
+            const avatarClass = sender === 'user' ? 'user-avatar' : 'assistant-avatar';
+            const avatarIcon = sender === 'user' ? 'fa-user' : 'fa-robot';
+            
+            if (isToolCall) {
+                messageDiv.innerHTML = `
+                    <div class="message-avatar ${avatarClass}">
+                        <i class="fas ${avatarIcon}"></i>
+                    </div>
+                    <div class="message-content">
+                        <div class="tool-message">
+                            <div class="tool-message-header">
+                                <i class="fas fa-tools"></i>
+                                <strong>工具调用</strong>
+                            </div>
+                            <div>${content}</div>
+                        </div>
+                        <div class="message-actions">
+                            <button class="action-btn" onclick="copyText('${content.replace(/'/g, "\\'")}')">
+                                <i class="fas fa-copy"></i> 复制
+                            </button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                messageDiv.innerHTML = `
+                    <div class="message-avatar ${avatarClass}">
+                        <i class="fas ${avatarIcon}"></i>
+                    </div>
+                    <div class="message-content">
+                        <p>${content}</p>
+                        <div class="message-actions">
+                            <button class="action-btn" onclick="copyText('${content.replace(/'/g, "\\'")}')">
+                                <i class="fas fa-copy"></i> 复制
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        // 显示正在输入指示器
+        function showTypingIndicator() {
+            // 如果是第一条消息，移除欢迎界面
+            if (chatContainer.querySelector('.welcome-message')) {
+                chatContainer.innerHTML = '';
+            }
+            
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message assistant-message';
+            typingDiv.id = 'typing-indicator';
+            typingDiv.innerHTML = `
+                <div class="message-avatar assistant-avatar">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="message-content">
+                    <div class="typing-indicator">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+            `;
+            chatContainer.appendChild(typingDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        // 隐藏正在输入指示器
+        function hideTypingIndicator() {
+            const typingIndicator = document.getElementById('typing-indicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+        
+        // 发送消息到后端
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+            
+            // 添加用户消息
+            addMessage(message, 'user');
+            messageInput.value = '';
+            
+            // 禁用发送按钮
+            sendButton.disabled = true;
+            
+            // 显示正在输入指示器
+            showTypingIndicator();
+            
+            try {
+                const response = await fetch('/dialogue', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        message: message,
+                        model: currentModel
+                    })
+                });
+                
+                hideTypingIndicator();
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // 检查是否是工具调用
+                    if (data.response.startsWith('{"action":')) {
+                        try {
+                            const toolCall = JSON.parse(data.response);
+                            const toolInfo = `工具: ${toolCall.action}<br>参数: ${JSON.stringify(toolCall.parameters, null, 2)}`;
+                            addMessage(toolInfo, 'assistant', true);
+                            
+                            // 添加工具执行结果
+                            addMessage(`工具执行完成`, 'assistant');
+                        } catch (e) {
+                            addMessage(data.response, 'assistant');
+                        }
+                    } else {
+                        addMessage(data.response, 'assistant');
+                    }
+                    
+                    // 更新聊天历史
+                    updateChatHistory(message, data.response);
+                } else {
+                    const errorText = await response.text();
+                    addMessage(`❌ 错误: ${response.status} - ${errorText}`, 'assistant');
+                    statusIndicator.className = 'status-indicator status-offline';
+                }
+            } catch (error) {
+                hideTypingIndicator();
+                addMessage(`❌ 网络错误: ${error.message}`, 'assistant');
+                statusIndicator.className = 'status-indicator status-offline';
+            } finally {
+                // 重新启用发送按钮
+                sendButton.disabled = false;
+                messageInput.focus();
+            }
+        }
+        
+        // 清空聊天
+        function clearChat() {
+            chatContainer.innerHTML = `
+                <div class="welcome-message">
+                    <h1 class="welcome-title">PocketCore 智能助手</h1>
+                    <p class="welcome-subtitle">您的个人AI助手，可以帮您处理各种任务</p>
+                    <div class="capabilities-grid">
+                        <div class="capability-card">
+                            <div class="capability-icon">
+                                <i class="fas fa-calculator"></i>
+                            </div>
+                            <h3 class="capability-title">数学计算</h3>
+                            <p class="capability-desc">快速准确地计算数学表达式</p>
+                        </div>
+                        <div class="capability-card">
+                            <div class="capability-icon">
+                                <i class="fas fa-language"></i>
+                            </div>
+                            <h3 class="capability-title">语言翻译</h3>
+                            <p class="capability-desc">支持多种语言的翻译服务</p>
+                        </div>
+                        <div class="capability-card">
+                            <div class="capability-icon">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <h3 class="capability-title">信息搜索</h3>
+                            <p class="capability-desc">查找您需要的各种信息</p>
+                        </div>
+                        <div class="capability-card">
+                            <div class="capability-icon">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <h3 class="capability-title">模型管理</h3>
+                            <p class="capability-desc">查看和管理可用的AI模型</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            currentChatId = Date.now().toString();
+        }
+        
+        // 更新聊天历史
+        function updateChatHistory(userMessage, assistantMessage) {
+            const chatTitle = userMessage.substring(0, 20) + (userMessage.length > 20 ? '...' : '');
+            const chatEntry = {
+                id: currentChatId,
+                title: chatTitle,
+                timestamp: new Date().toISOString(),
+                messages: [
+                    { role: 'user', content: userMessage },
+                    { role: 'assistant', content: assistantMessage }
+                ]
+            };
+            
+            // 检查是否已存在
+            const existingIndex = chatHistory.findIndex(chat => chat.id === currentChatId);
+            if (existingIndex >= 0) {
+                chatHistory[existingIndex] = chatEntry;
+            } else {
+                chatHistory.unshift(chatEntry);
+                // 限制历史记录数量
+                if (chatHistory.length > 50) {
+                    chatHistory = chatHistory.slice(0, 50);
+                }
+            }
+            
+            // 保存到本地存储
+            localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+            loadChatHistory();
+        }
+        
+        // 加载聊天历史
+        function loadChatHistory() {
+            historyList.innerHTML = '';
+            chatHistory.forEach(chat => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                if (chat.id === currentChatId) {
+                    historyItem.classList.add('active');
+                }
+                historyItem.innerHTML = `
+                    <i class="fas fa-comment"></i>
+                    <span>${chat.title}</span>
+                `;
+                historyItem.addEventListener('click', () => {
+                    loadChat(chat.id);
+                    sidebar.classList.remove('open');
+                });
+                historyList.appendChild(historyItem);
+            });
+        }
+        
+        // 加载特定聊天
+        function loadChat(chatId) {
+            const chat = chatHistory.find(c => c.id === chatId);
+            if (chat) {
+                currentChatId = chatId;
+                clearChat();
+                chat.messages.forEach(msg => {
+                    addMessage(msg.content, msg.role);
+                });
+                loadChatHistory();
+            }
+        }
+        
+        // 测试API连接
+        async function testConnection() {
+            try {
+                const response = await fetch('/tools');
+                if (response.ok) {
+                    statusIndicator.className = 'status-indicator';
+                } else {
+                    statusIndicator.className = 'status-indicator status-offline';
+                }
+            } catch (error) {
+                statusIndicator.className = 'status-indicator status-offline';
+            }
+        }
+        
+        // 复制文本
+        function copyText(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                // 可以添加复制成功的提示
+            });
+        }
+    </script>
+</body>
+</html>

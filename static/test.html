@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PocketCore API 测试</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        h1, h2 {
+            color: #667eea;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 0.5rem 0.5rem 0.5rem 0;
+        }
+        button:hover {
+            background: #5a67d8;
+        }
+        textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            margin: 1rem 0;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin: 0.5rem 0;
+        }
+        .result {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 5px 5px 0;
+        }
+        .endpoint {
+            background: #edf2f7;
+            padding: 1rem;
+            border-radius: 5px;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PocketCore API 测试</h1>
+        
+        <div class="endpoint">
+            <h2>1. 系统状态</h2>
+            <button onclick="testEndpoint('/')">测试 /</button>
+            <div id="result-root" class="result"></div>
+        </div>
+        
+        <div class="endpoint">
+            <h2>2. 工具列表</h2>
+            <button onclick="testEndpoint('/tools')">测试 /tools</button>
+            <div id="result-tools" class="result"></div>
+        </div>
+        
+        <div class="endpoint">
+            <h2>3. 模型列表</h2>
+            <button onclick="testEndpoint('/models')">测试 /models</button>
+            <div id="result-models" class="result"></div>
+        </div>
+        
+        <div class="endpoint">
+            <h2>4. 查询功能</h2>
+            <input type="text" id="query-input" placeholder="输入查询内容..." value="你好，世界！">
+            <button onclick="testQuery()">测试 /query</button>
+            <div id="result-query" class="result"></div>
+        </div>
+        
+        <div class="endpoint">
+            <h2>5. 交互历史</h2>
+            <button onclick="testEndpoint('/memory?limit=3')">测试 /memory</button>
+            <div id="result-memory" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        async function testEndpoint(endpoint) {
+            try {
+                const response = await fetch(endpoint);
+                const data = await response.json();
+                document.getElementById(`result-${endpoint.replace('/', '').replace('?', '-')}`).innerHTML = 
+                    `<strong>状态码:</strong> ${response.status}<br><strong>响应:</strong><br><pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (error) {
+                document.getElementById(`result-${endpoint.replace('/', '').replace('?', '-')}`).innerHTML = 
+                    `<strong>错误:</strong> ${error.message}`;
+            }
+        }
+        
+        async function testQuery() {
+            const query = document.getElementById('query-input').value;
+            try {
+                const response = await fetch('/query', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ query: query })
+                });
+                const data = await response.json();
+                document.getElementById('result-query').innerHTML = 
+                    `<strong>状态码:</strong> ${response.status}<br><strong>响应:</strong><br><pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (error) {
+                document.getElementById('result-query').innerHTML = 
+                    `<strong>错误:</strong> ${error.message}`;
+            }
+        }
+        
+        // 页面加载时测试根路径
+        window.onload = function() {
+            testEndpoint('/');
+        };
+    </script>
+</body>
+</html>

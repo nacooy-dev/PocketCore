@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PocketCore 智能助手中枢</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-top: 0.5rem;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .card h2 {
+            color: #667eea;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 0.5rem;
+            margin-top: 0;
+        }
+        .api-endpoints {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+        .api-endpoints div {
+            margin-bottom: 0.5rem;
+        }
+        .btn {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            text-decoration: none;
+            margin-right: 1rem;
+            margin-top: 1rem;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        .btn:hover {
+            background: #5a67d8;
+        }
+        .btn-secondary {
+            background: #48bb78;
+        }
+        .btn-secondary:hover {
+            background: #38a169;
+        }
+        .btn-info {
+            background: #4299e1;
+        }
+        .btn-info:hover {
+            background: #3182ce;
+        }
+        footer {
+            text-align: center;
+            margin-top: 2rem;
+            padding: 1rem;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .status {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .status.running {
+            background: #48bb78;
+            color: white;
+        }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .feature {
+            background: #edf2f7;
+            padding: 1rem;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .feature h3 {
+            margin: 0 0 0.5rem 0;
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>PocketCore</h1>
+        <div class="subtitle">个人智能助手中枢系统</div>
+        <div style="margin-top: 1rem;">
+            <span class="status running">服务运行中</span>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <h2>系统概览</h2>
+            <p>PocketCore是一个基于PocketFlow框架构建的轻量级个人智能助手系统，用于高效调度和使用各种AI工具。</p>
+            
+            <div class="features">
+                <div class="feature">
+                    <h3>多LLM支持</h3>
+                    <p>支持Ollama、OpenAI、Anthropic、智谱、OpenRouter</p>
+                </div>
+                <div class="feature">
+                    <h3>工具调度</h3>
+                    <p>智能调度各种AI工具</p>
+                </div>
+                <div class="feature">
+                    <h3>模型发现</h3>
+                    <p>自动发现可用模型</p>
+                </div>
+            </div>
+            
+            <button class="btn" onclick="window.location.href='/docs'">API文档</button>
+            <button class="btn btn-secondary" onclick="testAPI()">测试API</button>
+        </div>
+
+        <div class="card">
+            <h2>API端点</h2>
+            <div class="api-endpoints">
+                <div><strong>GET</strong> / - 系统状态</div>
+                <div><strong>GET</strong> /tools - 可用工具列表</div>
+                <div><strong>GET</strong> /models - 可用模型列表</div>
+                <div><strong>POST</strong> /query - 处理查询请求</div>
+                <div><strong>GET</strong> /memory - 交互历史</div>
+            </div>
+            
+            <h3 style="margin-top: 1.5rem;">快速测试</h3>
+            <button class="btn btn-info" onclick="getTools()">获取工具列表</button>
+            <button class="btn btn-info" onclick="getModels()">获取模型列表</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>系统信息</h2>
+        <div id="system-info">
+            <p>正在加载系统信息...</p>
+        </div>
+    </div>
+
+    <footer>
+        <p>PocketCore © 2025 - 基于PocketFlow框架构建的个人智能助手中枢</p>
+    </footer>
+
+    <script>
+        // 页面加载时获取系统信息
+        window.onload = function() {
+            getSystemInfo();
+        };
+
+        function getSystemInfo() {
+            fetch('/tools')
+                .then(response => response.json())
+                .then(data => {
+                    const infoDiv = document.getElementById('system-info');
+                    let html = '<h3>可用工具</h3><ul>';
+                    data.tools.forEach(tool => {
+                        html += `<li><strong>${tool.name}</strong>: ${tool.description}</li>`;
+                    });
+                    html += '</ul>';
+                    infoDiv.innerHTML = html;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('system-info').innerHTML = '<p>获取系统信息失败</p>';
+                });
+        }
+
+        function testAPI() {
+            alert('API测试功能已触发！请查看浏览器控制台获取详细信息。');
+            console.log('测试API功能...');
+        }
+
+        function getTools() {
+            fetch('/tools')
+                .then(response => response.json())
+                .then(data => {
+                    let toolsList = '可用工具列表:\n\n';
+                    data.tools.forEach(tool => {
+                        toolsList += `${tool.name}: ${tool.description}\n`;
+                    });
+                    alert(toolsList);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('获取工具列表失败');
+                });
+        }
+
+        function getModels() {
+            fetch('/models')
+                .then(response => response.json())
+                .then(data => {
+                    let modelsList = '可用模型列表:\n\n';
+                    data.models.forEach(modelInfo => {
+                        modelsList += `${modelInfo.provider.toUpperCase()}:\n`;
+                        modelInfo.models.forEach(model => {
+                            modelsList += `  - ${model}\n`;
+                        });
+                        modelsList += '\n';
+                    });
+                    alert(modelsList);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('获取模型列表失败');
+                });
+        }
+    </script>
+</body>
+</html>
